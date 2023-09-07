@@ -8,6 +8,8 @@ import BounceLoader from "react-spinners/BounceLoader";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function review() {
+  
+  const auth = getAuth();
   const provider = new GoogleAuthProvider();
 
   const [quality, setQuality] = useState(0);
