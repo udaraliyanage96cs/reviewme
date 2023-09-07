@@ -1,13 +1,13 @@
 import React, { useState, useEffect, CSSProperties } from "react";
 import ReactStars from "react-rating-stars-component";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore"; 
+import { doc, setDoc, addDoc, collection, Timestamp } from "firebase/firestore";
 import Cookies from "js-cookie";
 import db from "../firebase";
 import BounceLoader from "react-spinners/BounceLoader";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function review() {
-  const auth = getAuth();
   const provider = new GoogleAuthProvider();
 
   const [quality, setQuality] = useState(0);
@@ -59,16 +59,31 @@ export default function review() {
     borderColor: "red",
   };
 
+  const clearStates = () => {
+    setQuality(0);
+    setDelivery(0);
+    setSatify(0);
+    setYourName("");
+    setProName("");
+    setMessage("");
+  };
+
   const onSubmitHandler = async () => {
     setSubmitting(true);
-    console.log(quality, delivery, satify, yourName, proName, message);
-    await setDoc(doc(db, "review", user.email), {
+    await addDoc(collection(db, "review"), {
       quality: quality,
       delivery: delivery,
       satify: satify,
-      yourName:yourName,
-      proName:proName,
-      message:message
+      yourName: yourName,
+      proName: proName,
+      message: message,
+      createdBy: user.email,
+      createdAt: Timestamp.fromDate(new Date()),
+    }).then(() => {
+      console.log("done");
+      setSubmitting(false);
+      clearStates();
+      notify();
     });
   };
 
@@ -93,6 +108,8 @@ export default function review() {
       });
   };
 
+  const notify = () => toast.success("Thank you, Your Review Submitted Successfully!",{duration: 4000});
+
   useEffect(() => {
     const savedUser = Cookies.get("user");
     if (savedUser) {
@@ -109,6 +126,7 @@ export default function review() {
 
   return (
     <div className="container">
+      <Toaster position="top-right" reverseOrder={false} />
       <div className="row justify-content-center ">
         <div className="col-md-12">
           <div className="row justify-content-center">
@@ -173,19 +191,19 @@ export default function review() {
                   <div className="star-rating mb-2 mt-4">
                     <label>Quality of Work</label>
                     <div className="startclass">
-                      <ReactStars {...workQualitty} />
+                      <ReactStars {...workQualitty} value={quality} />
                     </div>
                   </div>
                   <div className="star-rating mb-2">
                     <label>Fast Delivery</label>
                     <div className="startclass">
-                      <ReactStars {...fastDelivery} />
+                      <ReactStars {...fastDelivery} value={delivery} />
                     </div>
                   </div>
                   <div className="star-rating mb-2">
                     <label>Overall Satisfaction</label>
                     <div className="startclass">
-                      <ReactStars {...satisfaction} />
+                      <ReactStars {...satisfaction} value={satify} />
                     </div>
                   </div>
                 </div>
@@ -226,6 +244,7 @@ export default function review() {
                       cols="30"
                       rows="7"
                       placeholder="Write your message"
+                      value={message}
                       disabled={isInputDisabled}
                       onChange={(e) => setMessage(e.target.value)}
                     ></textarea>
@@ -235,12 +254,14 @@ export default function review() {
                 <div className="row">
                   {signup && (
                     <div className="col-12 d-flex justify-content-end">
-                      {!submitting && (<input
-                        type="submit"
-                        value="Submit"
-                        className="btn btn-primary rounded-0 py-2 px-4"
-                        onClick={() => onSubmitHandler()}
-                      />)}
+                      {!submitting && (
+                        <input
+                          type="submit"
+                          value="Submit"
+                          className="btn btn-primary rounded-0 py-2 px-4"
+                          onClick={() => onSubmitHandler()}
+                        />
+                      )}
                       <BounceLoader
                         color={color}
                         loading={submitting}
