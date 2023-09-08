@@ -1,6 +1,11 @@
 import React, { useState, useEffect, CSSProperties } from "react";
 import ReactStars from "react-rating-stars-component";
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+} from "firebase/auth";
 import { doc, setDoc, addDoc, collection, Timestamp } from "firebase/firestore";
 import Cookies from "js-cookie";
 import db from "../firebase";
@@ -8,9 +13,9 @@ import BounceLoader from "react-spinners/BounceLoader";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function review() {
-  
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
+  const fbprovider = new FacebookAuthProvider();
 
   const [quality, setQuality] = useState(0);
   const [delivery, setDelivery] = useState(0);
@@ -79,6 +84,7 @@ export default function review() {
       yourName: yourName,
       proName: proName,
       message: message,
+      userImage: user.photoURL,
       createdBy: user.email,
       createdAt: Timestamp.fromDate(new Date()),
     }).then(() => {
@@ -110,7 +116,32 @@ export default function review() {
       });
   };
 
-  const notify = () => toast.success("Thank you, Your Review Submitted Successfully!",{duration: 4000});
+  const fbsignin = () => {
+    signInWithPopup(auth, fbprovider)
+      .then((result) => {
+        const user = result.user;
+        const credential = FacebookAuthProvider.credentialFromResult(result);
+        const accessToken = credential.accessToken;
+        setUser(user);
+        console.log(user);
+        setSignup(true);
+        setInputDisabled(false);
+        Cookies.set("user", JSON.stringify(user), { expires: 1 });
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        const email = error.customData.email;
+        const credential = FacebookAuthProvider.credentialFromError(error);
+
+        // ...
+      });
+  };
+
+  const notify = () =>
+    toast.success("Thank you, Your Review Submitted Successfully!", {
+      duration: 4000,
+    });
 
   useEffect(() => {
     const savedUser = Cookies.get("user");
@@ -284,6 +315,12 @@ export default function review() {
                         onClick={googlesignin}
                       >
                         Login with Google
+                      </button>
+                      <button
+                        className="loginBtn loginBtn--facebook btn w-auto"
+                        onClick={fbsignin}
+                      >
+                        Login with Facebook
                       </button>
                     </div>
                   )}
