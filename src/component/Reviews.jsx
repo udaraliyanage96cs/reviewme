@@ -316,12 +316,12 @@ export default function review() {
                       >
                         Login with Google
                       </button>
-                      <button
+                      {/* <button
                         className="loginBtn loginBtn--facebook btn w-auto"
                         onClick={fbsignin}
                       >
                         Login with Facebook
-                      </button>
+                      </button> */}
                     </div>
                   )}
                 </div>

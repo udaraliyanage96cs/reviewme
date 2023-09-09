@@ -3,6 +3,7 @@ body {
   background-color: #fff;
   line-height: 1.9;
   color: #8c8c8c;
+  padding: 50px;
 }
 
 h1,
@@ -306,6 +307,9 @@ a:hover .fa-youtube {
   .w-80 {
     width: 80% !important;
   }
+  body{
+    padding: 30px;
+  }
 }
 @media screen and (max-width: 767px) {
   #root {
@@ -316,5 +320,8 @@ a:hover .fa-youtube {
   }
   .mobi-text-center {
     text-align: center;
+  }
+  body{
+    padding: 20px;
   }
 }
